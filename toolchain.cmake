@@ -1,0 +1,13 @@
+set(CMAKE_SYSTEM_PROCESSOR armv7-m)
+set(CMAKE_C_COMPILER arm-none-eabi-gcc)
+set(CMAKE_CXX_COMPILER arm-none-eabi-g++)
+set(CMAKE_MAKE_PROGRAM=make)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=armv7e-m -ffreestanding -mfpu=fpv4-sp-d16 -mthumb -mcpu=cortex-m4 -mfloat-abi=softfp")
+set(CMAKE_EXE_LINKER_FLAGS " --specs=nosys.specs")
+
+set(CMAKE_SYSTEM_NAME Generic)
+set(CMAKE_SYSTEM_VERSION 1)
+set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
