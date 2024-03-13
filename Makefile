@@ -16,34 +16,24 @@ LDFLAGS =$(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T ld_ram.lds
 EXE =exec
 SOURCES =main.c init.c memfuncs.c
 OBJS =$(SOURCES:.c=.o) crt0.o
-TO_CLEAN =$(SOURCES:.c=.o) $(SOURCES:.c=.d) $(EXE)
-
-
-
-
-all: $(EXE)
-
-$(EXE) : $(OBJS)
-	$(CC) $^ $(LDFLAGS) -o $@
-
-%.o : %.asm
-	$(AS) $(TARGET_ARCH) -o $@ $<
-
-connect::
-	stlink-gdbserver
-
-debug: $(EXE)
-	$(GDB) -x config.gdb $^
-
-dump: $(EXE)
-	$(OBJDUMP) -d $^
+TO_CLEAN =$(OBJS) $(OBJS:.o=.d) $(EXE)
 
 
 BUILD_DIR =build
 BUILD_TYPE =Debug
 TOOLCHAIN =toolchain.cmake
 
-lib::
+all: $(EXE)
+
+%.o : %.asm
+	$(AS) $(TARGET_ARCH) -o $@ $<
+
+$(EXE) : LIB $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS) -o $@
+
+LIB : | $(BUILD_DIR)
+
+$(BUILD_DIR):
 	rm -r -f $(BUILD_DIR); \
 	mkdir $(BUILD_DIR); \
 	cd $(BUILD_DIR); \
@@ -53,8 +43,20 @@ lib::
 	ln -s ../../mbedtls-3.5.2/include/mbedtls/; \
 	cd ../..;
 
+connect::
+	stlink-gdbserver
+
+debug: $(EXE)
+	$(GDB) -x config.gdb $^
+
+dump: $(EXE)
+	$(OBJDUMP) -D $^ > dump.txt
+
 
 clean::
 	rm -f $(TO_CLEAN)
+
+fclean: clean
+	rm -r -f $(BUILD_DIR)
 
 -include $(SOURCES:.c=.d)

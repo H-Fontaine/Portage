@@ -1,6 +1,7 @@
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 1M
+    BOOT (rx) : ORIGIN = 0x00000000, LENGTH = 8
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 1M
     SRAM1 (wx) : ORIGIN = 0x20000000, LENGTH = 112K
     SRAM2 (w) : ORIGIN = 0x2001C000, LENGTH = 16K
 }
@@ -9,17 +10,17 @@ _stack_begin = ORIGIN(SRAM2) + LENGTH(SRAM2);
 
 SECTIONS
 {
-    /*.boot : {
+    .boot : {
         *(.boot)
-    } > FLASH
+    } > BOOT
 
     .bootloader : {
         *(.bootloader)
-    } > FLASH*/
+    } > FLASH
 
     .text : {
         *(.text)
-    } > SRAM1 /*AT > FLASH*/
+    } > SRAM1 AT > FLASH
 
     .rodata : {
         *(.rodata)
@@ -27,11 +28,11 @@ SECTIONS
 
     .data : {
         *(.data)
-    } > SRAM1 /*AT > FLASH*/
+    } > SRAM1 AT > FLASH
 
     .bss : {
         *(.bss) *(COMMON)
-    } > SRAM1 /*AT > FLASH*/
+    } > SRAM1 AT > FLASH
 }
 
 
