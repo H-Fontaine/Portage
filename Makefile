@@ -8,16 +8,16 @@ CC =$(PREFIX)gcc
 AS =$(PREFIX)as
 OBJDUMP =$(PREFIX)objdump
 
-TARGET_ARCH =-mcpu=cortex-m4 -mthumb
+TARGET_ARM =-mcpu=cortex-m4 -mthumb
+TARGET_ARCH =$(TARGET_ARM) -ffreestanding -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
 
-CFLAGS =-g -O1 -Wall -Werror -Wextra -Wno-unused-parameter $(foreach d, $(INCSDIR), -I$d) -ffreestanding -MD -MP -mfpu=fpv4-sp-d16 -mfloat-abi=softfp 
+CFLAGS =-g -O1 -Wall -Werror -Wextra -Wno-unused-parameter $(foreach d, $(INCSDIR), -I$d) -MD -MP $(TARGET_ARCH)
 LDFLAGS =$(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T linker_script.lds
 
 EXE =exec
 SOURCES =main.c init.c mbedtls_dependencies.c
 OBJS =$(SOURCES:.c=.o) crt0.o
-TO_CLEAN =$(OBJS) $(OBJS:.o=.d) $(EXE)
-
+OBJS_TO_CLEAN =$(OBJS) $(OBJS:.o=.d) $(EXE)
 
 BUILD_DIR =build
 BUILD_TYPE =Debug
@@ -26,12 +26,20 @@ TOOLCHAIN =toolchain.cmake
 all: $(EXE)
 
 %.o : %.asm
-	$(AS) $(TARGET_ARCH) -o $@ $<
+	$(AS) $(TARGET_ARM) -o $@ $<
 
 $(EXE) : LIB $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $@
 
-LIB : | $(BUILD_DIR)
+LIB : $(TOOLCHAIN) | $(BUILD_DIR)
+
+$(TOOLCHAIN) :
+	@echo "\
+set(CMAKE_SYSTEM_PROCESSOR armv7-m)\n\
+set(CMAKE_C_COMPILER $(CC))\n\
+set(CMAKE_MAKE_PROGRAM=make)\n\
+set(CMAKE_C_FLAGS \"\$${CMAKE_C_FLAGS} $(TARGET_ARCH)\")\n\
+set(CMAKE_EXE_LINKER_FLAGS \" --specs=nosys.specs\")" > $(TOOLCHAIN)
 
 $(BUILD_DIR):
 	rm -r -f $(BUILD_DIR); \
@@ -54,7 +62,7 @@ dump: $(EXE)
 
 
 clean::
-	rm -f $(TO_CLEAN)
+	rm -f $(OBJS_TO_CLEAN) $(TOOLCHAIN)
 
 fclean: clean
 	rm -r -f $(BUILD_DIR)
