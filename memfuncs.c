@@ -64,9 +64,3 @@ int strlen(const char * str) {
     }
     return len;
 }
-
-
-int snprintf(char * str, size_t size, const char * format, ...) {
-    //TODO: Implement snprintf
-    return 0;
-}

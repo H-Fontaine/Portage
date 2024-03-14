@@ -808,7 +808,7 @@
 #endif
 
 #if defined(MBEDTLS_RSA_C) && ( !defined(MBEDTLS_PKCS1_V21) &&         \
-    !defined(MBEDTLS_PKCS1_V15) )
+    !defined(MBEDTLS_PKCS1_V15) ) && 0 /*Disabled this check to remove dependencies on snprintf and strlen, I have only the use of the primitive or RSA*/
 #error "MBEDTLS_RSA_C defined, but none of the PKCS1 versions enabled"
 #endif
 
