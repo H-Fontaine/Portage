@@ -11,7 +11,8 @@
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
         "*.d": true,
-        "*.o": true
+        "*.o": true,
+        ".gitignore": true
     },
     "explorerExclude.backup": {}
 }
