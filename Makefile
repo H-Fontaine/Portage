@@ -11,7 +11,7 @@ OBJDUMP =$(PREFIX)objdump
 TARGET_ARCH =-mcpu=cortex-m4 -mthumb
 
 CFLAGS =-g -O1 -Wall -Werror -Wextra -Wno-unused-parameter $(foreach d, $(INCSDIR), -I$d) -ffreestanding -MD -MP -mfpu=fpv4-sp-d16 -mfloat-abi=softfp 
-LDFLAGS =$(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T ld_ram.lds
+LDFLAGS =$(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T linker_script.lds
 
 EXE =exec
 SOURCES =main.c init.c memfuncs.c
