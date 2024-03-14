@@ -1,6 +1,6 @@
 INCSDIR =build/include build/library
 LIBSDIR =build/library
-LDLIBS =-lmbedtls -lmbedx509 -lmbedcrypto -nostdlib -lgcc
+LDLIBS =-lmbedcrypto -nostdlib
 
 PREFIX =arm-none-eabi-
 GDB =$(PREFIX)gdb
