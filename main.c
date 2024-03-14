@@ -1,13 +1,6 @@
 #include "mbedtls/rsa.h"
-#include "memfuncs.h"
+#include "mbedtls_dependencies.h"
 #include "mbedtls/memory_buffer_alloc.h"
-
-int rand(void* a , unsigned char* b, size_t c)
-{
-    (void)a;
-    memset(b, 1, c); //Ne peux pas mettre 0 comme valeur
-    return 0;
-}
 
 int main() {
     unsigned char memory_buf[5000];

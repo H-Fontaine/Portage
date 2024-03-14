@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include "memfuncs.h"
+#include "mbedtls_dependencies.h"
 
 extern char _text_start_LMA, _text_start_VMA, _text_size, _data_start_LMA, _data_start_VMA, _data_size, /*_vector_start_LMA, _vector_start_VMA, _vector_size,*/ _bss_start_VMA, _bss_size, _stack_begin, _start;
 

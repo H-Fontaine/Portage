@@ -14,7 +14,7 @@ CFLAGS =-g -O1 -Wall -Werror -Wextra -Wno-unused-parameter $(foreach d, $(INCSDI
 LDFLAGS =$(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T linker_script.lds
 
 EXE =exec
-SOURCES =main.c init.c memfuncs.c
+SOURCES =main.c init.c mbedtls_dependencies.c
 OBJS =$(SOURCES:.c=.o) crt0.o
 TO_CLEAN =$(OBJS) $(OBJS:.o=.d) $(EXE)
 

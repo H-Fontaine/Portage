@@ -1,7 +1,30 @@
+#include "mbedtls_dependencies.h"
 #include <stdint.h>
 #include <stddef.h>
-#include "memfuncs.h"
 
+
+/*Randomness generator function for blinding*/
+int rand(void* a , unsigned char* b, size_t c)
+{
+    (void)a;
+    memset(b, 1, c); //Ne peux pas mettre 0 comme valeur
+    return 0;
+}
+
+/*strlen for mbedtls_mpi_read_string line 525 in bignum.c*/
+int strlen(const char * str) {
+    int len = 0;
+    while (*(str + len) != '\0')
+    {
+        len++;
+    }
+    return len;
+}
+
+
+
+//
+// Memory functions
 void * memcpy(void * dest, const void * src, size_t size) {
     uint8_t* destination = (uint8_t*)dest;
     uint8_t* source = (uint8_t*)src;
@@ -54,13 +77,4 @@ int memcmp (const void * ptr1, const void * ptr2, size_t size) {
         }        
     }
     return 0;
-}
-
-int strlen(const char * str) {
-    int len = 0;
-    while (*(str + len) != '\0')
-    {
-        len++;
-    }
-    return len;
 }
