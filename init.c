@@ -5,7 +5,7 @@ extern char _text_start_LMA, _text_start_VMA, _text_size, _data_start_LMA, _data
 
 int main(void);
 
-void exit(void) {
+void exit(int code) {
     while (1)
     {
         /* code */
@@ -17,7 +17,7 @@ __attribute__((section(".bootloader"))) void init() {
     memset(&_bss_start_VMA, 0, (size_t) &_bss_size); //init .bss
 
     main();
-    exit();
+    exit(0);
 }
 
 void* const boot[] __attribute__((section(".boot"))) = {
