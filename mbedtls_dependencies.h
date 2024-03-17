@@ -7,7 +7,7 @@
 int rand(void* a , unsigned char* b, size_t c);
 
 /*strlen for mbedtls_mpi_read_string line 525 in bignum.c*/
-int strlen(const char * str);
+unsigned int strlen(const char * str);
 
 // Memory functions
 void * memcpy(void * dest, const void * src, size_t size);

@@ -2,7 +2,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-
 /*Randomness generator function for blinding*/
 int rand(void* a , unsigned char* b, size_t c)
 {
@@ -12,8 +11,8 @@ int rand(void* a , unsigned char* b, size_t c)
 }
 
 /*strlen for mbedtls_mpi_read_string line 525 in bignum.c*/
-int strlen(const char * str) {
-    int len = 0;
+unsigned int strlen(const char * str) {
+    unsigned int len = 0;
     while (*(str + len) != '\0')
     {
         len++;
