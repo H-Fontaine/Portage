@@ -2,3 +2,7 @@
 /vector_table.h
 dump.txt
 toolchain.cmake
+build
+exec
+*.o
+*.d
