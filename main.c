@@ -2,8 +2,11 @@
 #include "mbedtls_dependencies.h"
 #include "mbedtls/memory_buffer_alloc.h"
 
+#define HEAP_SIZE_IN_BYTES 16000
+
+unsigned char memory_buf[HEAP_SIZE_IN_BYTES];
+
 int main() {
-    unsigned char memory_buf[5000];
     mbedtls_memory_buffer_alloc_init(memory_buf, sizeof(memory_buf));
 
     int ret = 1;
