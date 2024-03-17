@@ -20,7 +20,7 @@ SECTIONS
 
     .text : {
         *(.text)
-    } > SRAM1 AT > FLASH
+    } > FLASH
 
     .rodata : {
         *(.rodata)
