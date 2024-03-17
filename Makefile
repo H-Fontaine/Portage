@@ -8,11 +8,17 @@ CC =$(PREFIX)gcc
 AS =$(PREFIX)as
 OBJDUMP =$(PREFIX)objdump
 
-TARGET_ARM =-mcpu=cortex-m4 -mthumb
-TARGET_ARCH =$(TARGET_ARM) -ffreestanding -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+ASM_FLAGS =-mcpu=cortex-m4 -mthumb
 
-CFLAGS =-g -O1 -Wall -Werror -Wextra -Wno-unused-parameter $(foreach d, $(INCSDIR), -I$d) -MD -MP $(TARGET_ARCH)
-LDFLAGS =$(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T linker_script.lds
+CFLAGS_ARCH =$(ASM_FLAGS) -ffreestanding -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+CFLAGS_ERROR =-Wall -Werror -Wextra -Wno-unused-parameter -Wmissing-include-dirs
+CFLAGS_OPTIONS =-mgeneral-regs-only -fno-common -pedantic -fomit-frame-pointer -ffunction-sections -fdata-sections #The last two require .data*, .bss* and .rodata* sections to be defined in the linker script
+
+LDFLAGS_SPECS =--specs=nosys.specs --specs=nano.specs -Wl,--gc-sections
+
+CFLAGS =-g -O1 $(CFLAGS_ERROR) $(foreach d, $(INCSDIR), -I$d) $(CFLAGS_ARCH) $(CFLAGS_OPTIONS) -MD -MP 
+CFLAGS_MBEDTLS =$(CFLAGS_ARCH) $(CFLAGS_OPTIONS) 
+LDFLAGS = $(LDFLAGS_SPECS) $(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T linker_script.lds
 
 EXE =exec
 SOURCES =main.c init.c mbedtls_dependencies.c
@@ -26,7 +32,7 @@ TOOLCHAIN =toolchain.cmake
 all: $(EXE)
 
 %.o : %.asm
-	$(AS) $(TARGET_ARM) -o $@ $<
+	$(AS) $(ASM_FLAGS) -o $@ $<
 
 $(EXE) : LIB $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $@
@@ -38,8 +44,8 @@ $(TOOLCHAIN) :
 set(CMAKE_SYSTEM_PROCESSOR armv7-m)\n\
 set(CMAKE_C_COMPILER $(CC))\n\
 set(CMAKE_MAKE_PROGRAM=make)\n\
-set(CMAKE_C_FLAGS \"\$${CMAKE_C_FLAGS} $(TARGET_ARCH)\")\n\
-set(CMAKE_EXE_LINKER_FLAGS \" --specs=nosys.specs\")" > $(TOOLCHAIN)
+set(CMAKE_C_FLAGS \"\$${CMAKE_C_FLAGS} $(CFLAGS_MBEDTLS)\")\n\
+set(CMAKE_EXE_LINKER_FLAGS \" $(LDFLAGS_SPECS)\")" > $(TOOLCHAIN)
 
 $(BUILD_DIR):
 	rm -r -f $(BUILD_DIR); \

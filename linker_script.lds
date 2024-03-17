@@ -20,18 +20,23 @@ SECTIONS
 
     .text : {
         *(.text)
+        *(.text*)
     } > FLASH
 
     .rodata : {
         *(.rodata)
+        *(.rodata*)
     } > FLASH
 
     .data : {
         *(.data)
+        *(.data*)
     } > SRAM1 AT > FLASH
 
     .bss : {
-        *(.bss) *(COMMON)
+        *(.bss)
+        *(COMMON)
+        *(.bss*)
     } > SRAM1 AT > FLASH
 }
 
