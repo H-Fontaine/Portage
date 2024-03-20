@@ -21,6 +21,10 @@ define sc
   focus cmd
 end
 
+define pyscript
+  source script.py
+end
+
 
 # Useful function when the processor is in hardfault to see
 # where it comes from.

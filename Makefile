@@ -3,7 +3,7 @@ LIBSDIR =build/library
 LDLIBS =-lmbedcrypto -nostdlib
 
 PREFIX =arm-none-eabi-
-GDB =$(PREFIX)gdb
+GDB =$(PREFIX)gdb-py
 CC =$(PREFIX)gcc
 AS =$(PREFIX)as
 OBJDUMP =$(PREFIX)objdump
@@ -61,11 +61,10 @@ connect::
 	stlink-gdbserver
 
 debug: $(EXE)
-	$(GDB) -x config.gdb $^
+	$(GDB) -x config.gdb $^ pyscript
 
 dump: $(EXE)
 	$(OBJDUMP) -D $^ > dump.txt
-
 
 clean::
 	rm -f $(OBJS_TO_CLEAN) $(TOOLCHAIN)
