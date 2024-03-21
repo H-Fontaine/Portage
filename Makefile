@@ -1,3 +1,6 @@
+##For gdb-py to ba able to use python packages : https://interrupt.memfault.com/blog/using-pypi-packages-with-GDB#setting-syspath-within-gdbinit
+
+
 INCSDIR =build/include build/library
 LIBSDIR =build/library
 LDLIBS =-lmbedcrypto -nostdlib
