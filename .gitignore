@@ -6,3 +6,4 @@ build
 exec
 *.o
 *.d
+test.py
