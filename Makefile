@@ -3,7 +3,7 @@
 ##To install arm-none-eabi-gdb : https://askubuntu.com/questions/1243252/how-to-install-arm-none-eabi-gdb-on-ubuntu-20-04-lts-focal-fossa
 
 
-INCSDIR =build/include build/library
+INCSDIR =build/include build/library CMSIS/Include CMSIS/Device/ST/STM32F4xx/Include
 LIBSDIR =build/library
 LDLIBS =-lmbedcrypto -nostdlib
 
@@ -26,7 +26,7 @@ CFLAGS_MBEDTLS =$(CFLAGS_ARCH) $(CFLAGS_OPTIONS)
 LDFLAGS = $(LDFLAGS_SPECS) $(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T linker_script.lds
 
 EXE =exec
-SOURCES =main.c init.c mbedtls_dependencies.c
+SOURCES =main.c init.c mbedtls_dependencies.c board.c
 OBJS =$(SOURCES:.c=.o) crt0.o
 OBJS_TO_CLEAN =$(OBJS) $(OBJS:.o=.d) $(EXE)
 

@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/CMSIS/Include/**",
+                "${workspaceFolder}/CMSIS/Device/ST/STM32F4xx/Include"
+            ]
+        }
+    ],
+    "version": 4
+}
