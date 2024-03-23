@@ -1,9 +1,5 @@
 target ext :61234
 load exec
-layout split
-layout asm
-layout regs
-focus cmd
 
 # interface with asm, regs and cmd windows
 define sasm
