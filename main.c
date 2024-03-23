@@ -9,19 +9,31 @@ unsigned char memory_buf[HEAP_SIZE_IN_BYTES];
 int main() {
     mbedtls_memory_buffer_alloc_init(memory_buf, sizeof(memory_buf));
 
-    int ret = 1;
+    int ret = 0;
     
     mbedtls_rsa_context rsa;
     mbedtls_rsa_init(&rsa);
 
-    mbedtls_mpi E, P, Q;
-    mbedtls_mpi_init(&E); mbedtls_mpi_init(&P); mbedtls_mpi_init(&Q);
+    mbedtls_mpi E, P, Q, N, D;
+    mbedtls_mpi_init(&E);
+    mbedtls_mpi_init(&P);
+    mbedtls_mpi_init(&Q);
+    mbedtls_mpi_init(&N);
+    mbedtls_mpi_init(&D);
 
-    mbedtls_mpi_lset(&Q, 792671947);
-    mbedtls_mpi_lset(&P, 812954609);
-    mbedtls_mpi_lset(&E, 5); //Can't be 3, don't know why
+    mbedtls_mpi_lset(&E, 65537);
+    
 
-    if ((ret = mbedtls_rsa_import(&rsa, NULL, &P, &Q, NULL, &E)) != 0) {
+    const char Q_as_string[310]; memset((void*)Q_as_string, 0, sizeof(Q_as_string));
+    const char P_as_string[310]; memset((void*)P_as_string, 0, sizeof(P_as_string));
+    const char N_as_string[620]; memset((void*)N_as_string, 0, sizeof(N_as_string));
+    const char D_as_string[620]; memset((void*)D_as_string, 0, sizeof(D_as_string));
+    mbedtls_mpi_read_string(&Q, 10, Q_as_string);
+    mbedtls_mpi_read_string(&P, 10, P_as_string);
+    mbedtls_mpi_read_string(&N, 10, N_as_string);
+    mbedtls_mpi_read_string(&D, 10, D_as_string);
+
+    if ((ret = mbedtls_rsa_import(&rsa, &N, &P, &Q, &D, &E)) != 0) {
         //printf(" failed\n  ! mbedtls_rsa_import returned %d\n\n", ret);
         return -1;
     }
@@ -30,8 +42,13 @@ int main() {
         return -1;
     }
 
+    if((ret = mbedtls_rsa_check_privkey(&rsa)) != 0) {
+        //printf(" failed\n  ! mbedtls_rsa_check_privkey returned %d\n\n", ret);
+        return -1;
+    }
+
     const size_t modlen = mbedtls_rsa_get_len(&rsa);
-    unsigned char plain_text[modlen]; memset(plain_text, 0, sizeof(plain_text)); plain_text[0] = 0;
+    unsigned char plain_text[modlen]; memset(plain_text, 0, sizeof(plain_text));
     unsigned char cipher_text[modlen]; memset(cipher_text, 0, sizeof(cipher_text));
     unsigned char result[modlen]; memset(result, 0, sizeof(result));
 
