@@ -4,6 +4,13 @@
 
 #define HEAP_SIZE_IN_BYTES 16000
 
+#define SIZE_OF_RSA_KEY_IN_BITS 1024
+#define SIZE_OF_P_AND_Q_IN_BITS (SIZE_OF_RSA_KEY_IN_BITS / 2)
+#define SIZE_OF_RSA_KEY_IN_BYTES (SIZE_OF_RSA_KEY_IN_BITS / 8)
+#define SIZE_OF_P_AND_Q_IN_BYTES (SIZE_OF_P_AND_Q_IN_BITS / 8)
+
+#define NB_TESTS 1000
+
 unsigned char memory_buf[HEAP_SIZE_IN_BYTES];
 
 int main() {
@@ -11,76 +18,77 @@ int main() {
 
     int ret = 0;
     
-    mbedtls_rsa_context rsa;
-    mbedtls_rsa_init(&rsa);
-
-    mbedtls_mpi E, P, Q, N, D;
-    mbedtls_mpi_init(&E);
+    mbedtls_mpi P, Q, N, D, E;
     mbedtls_mpi_init(&P);
     mbedtls_mpi_init(&Q);
     mbedtls_mpi_init(&N);
     mbedtls_mpi_init(&D);
+    mbedtls_mpi_init(&E);
+    mbedtls_rsa_context rsa;
+    mbedtls_rsa_init(&rsa);
 
+    const unsigned char Q_buffer[SIZE_OF_P_AND_Q_IN_BYTES]; 
+    const unsigned char P_buffer[SIZE_OF_P_AND_Q_IN_BYTES]; 
+    const unsigned char N_buffer[SIZE_OF_RSA_KEY_IN_BYTES]; 
+    const unsigned char D_buffer[SIZE_OF_RSA_KEY_IN_BYTES];
+
+    unsigned char plain_text[SIZE_OF_RSA_KEY_IN_BYTES];
+    unsigned char cipher_text[SIZE_OF_RSA_KEY_IN_BYTES];
+    unsigned char decrypted_text[SIZE_OF_RSA_KEY_IN_BYTES];
+    
     mbedtls_mpi_lset(&E, 65537);
+
+    int import_ret = 2;
+    int complete_ret = 2;
+    int key_check_ret = 2;
+    int public_ret = 2;
+    int private_ret = 2;
+
     
+    for (size_t i = 0; i < NB_TESTS; i++)
+    {
+        mbedtls_rsa_free(&rsa);
+        mbedtls_mpi_free(&P);
+        mbedtls_mpi_free(&Q);
+        mbedtls_mpi_free(&N);
+        mbedtls_mpi_free(&D);
 
-    const char Q_as_string[310]; memset((void*)Q_as_string, 0, sizeof(Q_as_string));
-    const char P_as_string[310]; memset((void*)P_as_string, 0, sizeof(P_as_string));
-    const char N_as_string[620]; memset((void*)N_as_string, 0, sizeof(N_as_string));
-    const char D_as_string[620]; memset((void*)D_as_string, 0, sizeof(D_as_string));
-    mbedtls_mpi_read_string(&Q, 10, Q_as_string);
-    mbedtls_mpi_read_string(&P, 10, P_as_string);
-    mbedtls_mpi_read_string(&N, 10, N_as_string);
-    mbedtls_mpi_read_string(&D, 10, D_as_string);
+        mbedtls_rsa_init(&rsa);
+        
+        mbedtls_mpi_init(&P);
+        mbedtls_mpi_init(&Q);
+        mbedtls_mpi_init(&N);
+        mbedtls_mpi_init(&D);
 
-    if ((ret = mbedtls_rsa_import(&rsa, &N, &P, &Q, &D, &E)) != 0) {
-        //printf(" failed\n  ! mbedtls_rsa_import returned %d\n\n", ret);
-        return -1;
-    }
-    if ((ret = mbedtls_rsa_complete(&rsa)) != 0) {
-        //printf(" failed\n  ! mbedtls_rsa_complete returned %d\n\n", ret);
-        return -1;
-    }
+        memset((void*)Q_buffer, 0, sizeof(Q_buffer));
+        memset((void*)P_buffer, 0, sizeof(P_buffer));
+        memset((void*)N_buffer, 0, sizeof(N_buffer));
+        memset((void*)D_buffer, 0, sizeof(D_buffer));
 
-    if((ret = mbedtls_rsa_check_privkey(&rsa)) != 0) {
-        //printf(" failed\n  ! mbedtls_rsa_check_privkey returned %d\n\n", ret);
-        return -1;
-    }
+        mbedtls_mpi_read_binary(&Q, Q_buffer, sizeof(Q_buffer)); 
+        mbedtls_mpi_read_binary(&P, P_buffer, sizeof(P_buffer));
+        mbedtls_mpi_read_binary(&N, N_buffer, sizeof(N_buffer));
+        mbedtls_mpi_read_binary(&D, D_buffer, sizeof(D_buffer));
 
-    const size_t modlen = mbedtls_rsa_get_len(&rsa);
-    unsigned char plain_text[modlen]; memset(plain_text, 0, sizeof(plain_text));
-    unsigned char cipher_text[modlen]; memset(cipher_text, 0, sizeof(cipher_text));
-    unsigned char result[modlen]; memset(result, 0, sizeof(result));
+        import_ret = mbedtls_rsa_import(&rsa, &N, &P, &Q, &D, &E);
+        complete_ret = mbedtls_rsa_complete(&rsa);
+        key_check_ret = mbedtls_rsa_check_pub_priv(&rsa, &rsa);
 
-    const size_t ilen = 5;
-    plain_text[modlen - 5] = 'a';
-    plain_text[modlen - 4] = 'b';
-    plain_text[modlen - 3] = 'c';
-    plain_text[modlen - 2] = 'd';
-    plain_text[modlen - 1] = 'e';
+        if (import_ret != 0 || complete_ret != 0 || key_check_ret != 0)
+        {
+            ret = -1;
+            break;
+        }
 
-    ret = mbedtls_rsa_public(&rsa, plain_text, cipher_text);
-    if (ret != 0) {
-        //printf(" failed\n  ! mbedtls_rsa_public returned %d\n\n", ret);
-        return -1;
-    }
+        public_ret = mbedtls_rsa_public(&rsa, plain_text, cipher_text);
+        private_ret = mbedtls_rsa_private(&rsa, rand, NULL, cipher_text, decrypted_text);
 
-    ret = mbedtls_rsa_private(&rsa, rand, NULL, cipher_text, result);
-    if (ret != 0) {
-        //printf(" failed\n  ! mbedtls_rsa_private returned %d\n\n", ret);
-        return -1;
+        if (public_ret != 0 || private_ret != 0)
+        {
+            ret = -1;
+            break;
+        }
     }
     
-    char a, b, c, d, e =0;
-    a = result[modlen - ilen];
-    b = result[modlen - ilen + 1];
-    c = result[modlen - ilen + 2];
-    d = result[modlen - ilen + 3];
-    e = result[modlen - ilen + 4];
-    
-    if (a != 'a' || b != 'b' || c != 'c' || d != 'd' || e != 'e') {
-        //printf(" failed\n  ! mbedtls_rsa_private returned %d\n\n", ret);
-        return -1;
-    }
-    return 0;
+    return ret;
 }

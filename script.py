@@ -1,46 +1,74 @@
 import gdb
-import time
 import Cryptodome.Util.number as nb
-import struct
+import random
 
-gdb.execute("b main.c:30")
-gdb.execute("b main.c:55")
-gdb.execute("b main.c:76")
+gdb.execute("b main.c:68") ##BEGIN LOADING VALUES
 
-gdb.Breakpoint("exit")
+NB_TESTS = 1000
 
-gdb.execute("continue")
+RSA_KEY_SIZE = 1024
+RSA_KEY_SIZE_BYTES = RSA_KEY_SIZE // 8
+PRIME_SIZE = RSA_KEY_SIZE // 2
+PRIME_SIZE_BYTES = PRIME_SIZE // 8
 
-P = nb.getPrime(1024)
-Q = nb.getPrime(1024)
-N = P * Q
+
 E = 65537
-phi = (P - 1) * (Q - 1)
-D = pow(E, -1, phi)
 
-gdb.execute("set var P_as_string=\"" + str(P) + "\"")
-gdb.execute("set var Q_as_string=\"" + str(Q) + "\"")
-gdb.execute("set var N_as_string=\"" + str(N) + "\"")
-gdb.execute("set var D_as_string=\"" + str(D) + "\"")
+test = True
 
-print("Starting cyphering and decyphering")
 
-gdb.execute("continue")
 
-print("Passed consistancy check")
+for i in range(NB_TESTS):
+    gdb.execute("c") ##run
 
-gdb.execute("continue")
+    if i != 0:
+        ##BEGIN CONSISTENCY CHECK
+        # import_ret = gdb.parse_and_eval("import_ret")
+        # complete_ret = gdb.parse_and_eval("complete_ret")
+        # privkeycheck_ret = gdb.parse_and_eval("key_check_ret")
+        # public_ret = gdb.parse_and_eval("public_ret")
+        # private_ret = gdb.parse_and_eval("private_ret")
+        cipher_text_gdb = int.from_bytes(gdb.selected_inferior().read_memory(gdb.parse_and_eval("cipher_text").address, RSA_KEY_SIZE_BYTES).tobytes(), 'big')
+        decrypted_text_gdb = int.from_bytes(gdb.selected_inferior().read_memory(gdb.parse_and_eval("decrypted_text").address, RSA_KEY_SIZE_BYTES).tobytes(), 'big')
 
-modlen = int(gdb.parse_and_eval('modlen'))
-print(modlen)
+        cipher_text_ret = cipher_text_gdb == cipher_text
+        decrypted_text_ret = decrypted_text_gdb == plain_text
 
-print(gdb.parse_and_eval("plain_text"))
-print(gdb.selected_inferior().read_memory(gdb.parse_and_eval('plain_text').address, modlen))
-plain_text = int.from_bytes(gdb.selected_inferior().read_memory(gdb.parse_and_eval('plain_text').address, modlen).tobytes(), 'big')
-cipher_text = int.from_bytes(gdb.selected_inferior().read_memory(gdb.parse_and_eval('cipher_text').address, modlen).tobytes(), 'big')
+        """import_ret != 0 or complete_ret != 0 or privkeycheck_ret != 0 or public_ret != 0 or private_ret != 0 or"""
+        if not(cipher_text_ret) or not(decrypted_text_ret) : 
+            test = False
+            log_file = open("log.txt", "w")
+            # log_file.write("import_ret: " + str(import_ret) + "\n")
+            # log_file.write("complete_ret: " + str(complete_ret) + "\n")
+            # log_file.write("privkeycheck_ret: " + str(privkeycheck_ret) + "\n")
+            # log_file.write("public_ret: " + str(public_ret) + "\n")
+            # log_file.write("private_ret: " + str(private_ret) + "\n")
+            log_file.write("cipher_text_ret: " + str(cipher_text_ret) + "\n")
+            log_file.write("decrypted_text_ret: " + str(decrypted_text_ret) + "\n")
+            log_file.write("P: " + str(P) + "\n")
+            log_file.write("Q: " + str(Q) + "\n")
+            log_file.write("N: " + str(N) + "\n")
+            log_file.write("D: " + str(D) + "\n")
+            log_file.close()
+            break
+        else : 
+            print("OK : Test " + str(i) + " passed")
+        
+    ##BEGIN LOADING VALUES
+    P = nb.getPrime(PRIME_SIZE)
+    Q = nb.getPrime(PRIME_SIZE)
+    N = P * Q
+    PHI = (P-1)*(Q-1)
+    D = pow(E, -1, PHI)
+    plain_text = random.randint(0, N-1)
+    cipher_text = pow(plain_text, E, N)
 
-print(plain_text)
-print(cipher_text)
+    gdb.selected_inferior().write_memory(gdb.parse_and_eval("Q_buffer").address, Q.to_bytes(PRIME_SIZE_BYTES, 'big')) ##WRITING Q
+    gdb.selected_inferior().write_memory(gdb.parse_and_eval("P_buffer").address, P.to_bytes(PRIME_SIZE_BYTES, 'big')) ##WRITING P
+    gdb.selected_inferior().write_memory(gdb.parse_and_eval("N_buffer").address, N.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING N
+    gdb.selected_inferior().write_memory(gdb.parse_and_eval("D_buffer").address, D.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING D
+    gdb.selected_inferior().write_memory(gdb.parse_and_eval("plain_text").address, plain_text.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING PLAINTEXT
+    ##END LOADING VALUES
 
-print(cipher_text == pow(plain_text, E, N))
-print(plain_text == pow(cipher_text, D, N))
+
+print("Test result : " +str(test))
