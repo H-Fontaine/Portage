@@ -1,7 +1,8 @@
 {
     "files.associations": {
         "*.sage": "python",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "functional": "c"
     },
     "files.exclude": {
         "**/.git": true,
