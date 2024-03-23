@@ -6,7 +6,7 @@ LIBSDIR =build/library
 LDLIBS =-lmbedcrypto -nostdlib
 
 PREFIX =arm-none-eabi-
-GDB =$(PREFIX)gdb-py
+GDB =$(PREFIX)gdb-py3
 CC =$(PREFIX)gcc
 AS =$(PREFIX)as
 OBJDUMP =$(PREFIX)objdump
