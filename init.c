@@ -13,7 +13,7 @@ void exit(int code) {
     }
 }
 
-__attribute__((section(".bootloader"))) void init() {
+void init() {
     memcpy(&_data_start_VMA, &_data_start_LMA, (size_t) &_data_size); //init .data
     memset(&_bss_start_VMA, 0, (size_t) &_bss_size); //init .bss
     board_init(); //init board

@@ -14,10 +14,6 @@ SECTIONS
         *(.boot)
     } > BOOT
 
-    .bootloader : {
-        *(.bootloader)
-    } > FLASH
-
     .text : {
         *(.text)
         *(.text*)
