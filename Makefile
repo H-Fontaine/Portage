@@ -1,4 +1,6 @@
 ##For gdb-py to ba able to use python packages : https://interrupt.memfault.com/blog/using-pypi-packages-with-GDB#setting-syspath-within-gdbinit
+##To get arm-none-eabi-gdb-py3 : https://github.com/xpack-dev-tools/arm-none-eabi-gcc-xpack
+##To install arm-none-eabi-gdb : https://askubuntu.com/questions/1243252/how-to-install-arm-none-eabi-gdb-on-ubuntu-20-04-lts-focal-fossa
 
 
 INCSDIR =build/include build/library
