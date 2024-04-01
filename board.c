@@ -211,17 +211,17 @@ void init_SYSCLK(uint8_t use_hsi, uint8_t f_sysclk, uint8_t wait_states, uint8_t
     // WITH THE CPU (3.9.1)
     //
 
-    if (enable_caches) {
-        // ENABLE ALL CACHES (FASTER ACCESS)
-        FLASH->ACR |= (FLASH_ACR_ICEN | FLASH_ACR_DCEN);
+    // if (enable_caches) {
+    //     // ENABLE ALL CACHES (FASTER ACCESS)
+    //     FLASH->ACR |= (FLASH_ACR_ICEN | FLASH_ACR_DCEN);
 
-        if (enable_art) {
-            // ART ACCELERATOR (3.5.2)
-            // CAUSES A SPIKE FOR MIRACL::FF::BIG_XXX_bit
-            // WEIRD BEHAVIOR -- DEPENDS ON NUMBER OF WAIT STATES
-            FLASH->ACR |= FLASH_ACR_PRFTEN;
-        }
-    }
+    //     if (enable_art) {
+    //         // ART ACCELERATOR (3.5.2)
+    //         // CAUSES A SPIKE FOR MIRACL::FF::BIG_XXX_bit
+    //         // WEIRD BEHAVIOR -- DEPENDS ON NUMBER OF WAIT STATES
+    //         FLASH->ACR |= FLASH_ACR_PRFTEN;
+    //     }
+    // }
 
     // CHANGE LATENTCY (SINCE I CHANGED THE CPU FREQUENCY)
     // SEE TABLE 10 FOR THE NUMBER OF WAIT STATES AND WAIT UNTIL
@@ -262,92 +262,92 @@ void init_SYSCLK(uint8_t use_hsi, uint8_t f_sysclk, uint8_t wait_states, uint8_t
     }
 }
 
-void init_trigger() {
-    //
-    // FOR THE TRIGGER, I WILL USE PD15
-    //
+// void init_trigger() {
+//     //
+//     // FOR THE TRIGGER, I WILL USE PD15
+//     //
 
-    // ENABLE THE GPIO PORT D CLOCK (7.3.10)
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
+//     // ENABLE THE GPIO PORT D CLOCK (7.3.10)
+//     RCC->AHB1ENR |= RCC_AHB1ENR_GPIODEN;
 
-    //
-    // CONFIGURE THE GPIO PINS
-    //
+//     //
+//     // CONFIGURE THE GPIO PINS
+//     //
 
-    // MODE : GENERAL PURPOSE OUTPUT (8.4.1)
-    GPIOD->MODER |= GPIO_MODER_MODER15_0;
-    // OUTPUT TYPE : PUSH-PULL (DEFAULT, 8.4.2)
-    // OUTPUT SPEED : VERY HIGH - THE COMPUTATION WE'RE LOOKING
-    // AT STARTS RIGHT AFTER THE TRIGGER (8.4.3, SEE DATASHEET
-    // FOR FREQUENCY)
-    GPIOD->OSPEEDR |= GPIO_OSPEEDR_OSPEED15_Msk;
-    // PUPD : NEITHER (DEFAULT, 8.4.4)
+//     // MODE : GENERAL PURPOSE OUTPUT (8.4.1)
+//     GPIOD->MODER |= GPIO_MODER_MODER15_0;
+//     // OUTPUT TYPE : PUSH-PULL (DEFAULT, 8.4.2)
+//     // OUTPUT SPEED : VERY HIGH - THE COMPUTATION WE'RE LOOKING
+//     // AT STARTS RIGHT AFTER THE TRIGGER (8.4.3, SEE DATASHEET
+//     // FOR FREQUENCY)
+//     GPIOD->OSPEEDR |= GPIO_OSPEEDR_OSPEED15_Msk;
+//     // PUPD : NEITHER (DEFAULT, 8.4.4)
 
-    // SAME THING FOR PD14
-    GPIOD->MODER |= GPIO_MODER_MODER14_0;
-    GPIOD->OSPEEDR |= GPIO_OSPEEDR_OSPEED14_Msk;
-}
+//     // SAME THING FOR PD14
+//     GPIOD->MODER |= GPIO_MODER_MODER14_0;
+//     GPIOD->OSPEEDR |= GPIO_OSPEEDR_OSPEED14_Msk;
+// }
 
-void trigger_high(uint8_t pin) {
-    for (uint8_t i = 0; i < 6; i++) {
-        __asm volatile("NOP");
-    }
+// void trigger_high(uint8_t pin) {
+//     for (uint8_t i = 0; i < 6; i++) {
+//         __asm volatile("NOP");
+//     }
 
-    // BSRR IS WRITE-ONLY (8.4.7)
-    switch(pin) {
-        case PIN_AUX_TRIGGER:
-            GPIOD->BSRR = GPIO_BSRR_BS14_Msk;
-            break;
-        case PIN_MAIN_TRIGGER:
-            GPIOD->BSRR = GPIO_BSRR_BS15_Msk;
-            break;
-    }
+//     // BSRR IS WRITE-ONLY (8.4.7)
+//     switch(pin) {
+//         case PIN_AUX_TRIGGER:
+//             GPIOD->BSRR = GPIO_BSRR_BS14_Msk;
+//             break;
+//         case PIN_MAIN_TRIGGER:
+//             GPIOD->BSRR = GPIO_BSRR_BS15_Msk;
+//             break;
+//     }
 
-    for (uint8_t i = 0; i < 6; i++) {
-        __asm volatile("NOP");
-    }
-}
+//     for (uint8_t i = 0; i < 6; i++) {
+//         __asm volatile("NOP");
+//     }
+// }
 
-void trigger_low(uint8_t pin) {
-    for (uint8_t i = 0; i < 6; i++) {
-        __asm volatile("NOP");
-    }
+// void trigger_low(uint8_t pin) {
+//     for (uint8_t i = 0; i < 6; i++) {
+//         __asm volatile("NOP");
+//     }
 
-    // BSRR IS WRITE-ONLY (8.4.7)
-    switch(pin) {
-        case PIN_AUX_TRIGGER:
-            GPIOD->BSRR = GPIO_BSRR_BR14_Msk;
-            break;
-        case PIN_MAIN_TRIGGER:
-            GPIOD->BSRR = GPIO_BSRR_BR15_Msk;
-            break;
-    }
+//     // BSRR IS WRITE-ONLY (8.4.7)
+//     switch(pin) {
+//         case PIN_AUX_TRIGGER:
+//             GPIOD->BSRR = GPIO_BSRR_BR14_Msk;
+//             break;
+//         case PIN_MAIN_TRIGGER:
+//             GPIOD->BSRR = GPIO_BSRR_BR15_Msk;
+//             break;
+//     }
 
-    for (uint8_t i = 0; i < 6; i++) {
-        __asm volatile("NOP");
-    }
-}
+//     for (uint8_t i = 0; i < 6; i++) {
+//         __asm volatile("NOP");
+//     }
+// }
 
-void init_clock_output() {
-    // SEE 6.2.10 FOR FURTHER INFORMATION ON THIS
+// void init_clock_output() {
+//     // SEE 6.2.10 FOR FURTHER INFORMATION ON THIS
 
-    // CONFIGURE MCOx TO OUTPUT HSE (1) AND SYSCLK (2)
-    RCC->CFGR |= RCC_CFGR_MCO1_1;
+//     // CONFIGURE MCOx TO OUTPUT HSE (1) AND SYSCLK (2)
+//     RCC->CFGR |= RCC_CFGR_MCO1_1;
 
-    //
-    // MCO1 IS ON PA8 AND MCO2 IS ON PC9
-    //
+//     //
+//     // MCO1 IS ON PA8 AND MCO2 IS ON PC9
+//     //
 
-    // ENABLE THE GPIO PORTs A & C CLOCKS (7.3.10)
-    RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOCEN);
+//     // ENABLE THE GPIO PORTs A & C CLOCKS (7.3.10)
+//     RCC->AHB1ENR |= (RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOCEN);
 
-    // NOW, CONFIGURE THE GPIOs
-    GPIOA->MODER |= GPIO_MODER_MODER8_1;
-    GPIOC->MODER |= GPIO_MODER_MODER9_1;
+//     // NOW, CONFIGURE THE GPIOs
+//     GPIOA->MODER |= GPIO_MODER_MODER8_1;
+//     GPIOC->MODER |= GPIO_MODER_MODER9_1;
 
-    GPIOA->OSPEEDR |= (0x3UL << GPIO_OSPEEDR_OSPEED8_Pos);
-    GPIOC->OSPEEDR |= (0x3UL << GPIO_OSPEEDR_OSPEED9_Pos);
-}
+//     GPIOA->OSPEEDR |= (0x3UL << GPIO_OSPEEDR_OSPEED8_Pos);
+//     GPIOC->OSPEEDR |= (0x3UL << GPIO_OSPEEDR_OSPEED9_Pos);
+// }
 
 void board_init() {
     if (clock_check) {
