@@ -351,9 +351,9 @@ void init_SYSCLK(uint8_t use_hsi, uint8_t f_sysclk, uint8_t wait_states, uint8_t
 
 void board_init() {
     if (clock_check) {
-        init_clock_output();
+        //init_clock_output();
     }
 
     init_SYSCLK(use_hsi, f_sysclk, wait_states, enable_caches);
-    init_trigger();
+    //init_trigger();
 }
