@@ -44,6 +44,12 @@ int main() {
     int public_ret = 2;
     int private_ret = 2;
 
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    asm("nop");
+    asm("nop");
     
     for (size_t i = 0; i < NB_TESTS; i++)
     {
