@@ -271,4 +271,7 @@ void init_SYSCLK(uint8_t use_hsi, uint8_t f_sysclk, uint8_t wait_states, uint8_t
 
 void board_init() {
     init_SYSCLK(use_hsi, f_sysclk, wait_states, enable_caches);
+
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk; // ENABLE CYCLE COUNTER
+    DWT->CYCCNT = 0; // RESET CYCLE COUNTER
 }
