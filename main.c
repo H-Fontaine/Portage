@@ -32,25 +32,17 @@ int main() {
     const unsigned char N_buffer[SIZE_OF_RSA_KEY_IN_BYTES]; 
     const unsigned char D_buffer[SIZE_OF_RSA_KEY_IN_BYTES];
 
-    unsigned char plain_text[SIZE_OF_RSA_KEY_IN_BYTES];
-    unsigned char cipher_text[SIZE_OF_RSA_KEY_IN_BYTES];
-    unsigned char decrypted_text[SIZE_OF_RSA_KEY_IN_BYTES];
+    unsigned char input[SIZE_OF_RSA_KEY_IN_BYTES];
+    unsigned char output[SIZE_OF_RSA_KEY_IN_BYTES];
     
     mbedtls_mpi_lset(&E, 65537);
 
-    int import_ret = 2;
-    int complete_ret = 2;
-    int key_check_ret = 2;
-    int public_ret = 2;
-    int private_ret = 2;
+    int import_ret = -1;
+    int complete_ret = -1;
+    int key_check_ret = -1;
+    int public_ret = -1;
+    int private_ret = -1;
 
-    asm("nop");
-    asm("nop");
-    asm("nop");
-    asm("nop");
-    asm("nop");
-    asm("nop");
-    
     for (size_t i = 0; i < NB_TESTS; i++)
     {
         mbedtls_rsa_free(&rsa);
@@ -86,10 +78,9 @@ int main() {
             break;
         }
 
-        public_ret = mbedtls_rsa_public(&rsa, plain_text, cipher_text);
-        private_ret = mbedtls_rsa_private(&rsa, rand, NULL, cipher_text, decrypted_text);
+        private_ret = mbedtls_rsa_private(&rsa, rand, NULL, output, input);
 
-        if (public_ret != 0 || private_ret != 0)
+        if (private_ret != 0)
         {
             ret = -1;
             break;
