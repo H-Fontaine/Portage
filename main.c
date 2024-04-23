@@ -9,7 +9,7 @@
 #define SIZE_OF_RSA_KEY_IN_BYTES (SIZE_OF_RSA_KEY_IN_BITS / 8)
 #define SIZE_OF_P_AND_Q_IN_BYTES (SIZE_OF_P_AND_Q_IN_BITS / 8)
 
-#define NB_TESTS 1000
+#define NB_TESTS 5
 
 unsigned char memory_buf[HEAP_SIZE_IN_BYTES];
 
@@ -40,7 +40,6 @@ int main() {
     int import_ret = -1;
     int complete_ret = -1;
     int key_check_ret = -1;
-    int public_ret = -1;
     int private_ret = -1;
 
     for (size_t i = 0; i < NB_TESTS; i++)
@@ -78,7 +77,7 @@ int main() {
             break;
         }
 
-        private_ret = mbedtls_rsa_private(&rsa, rand, NULL, output, input);
+        private_ret = mbedtls_rsa_private(&rsa, rand, NULL, input, output);
 
         if (private_ret != 0)
         {
@@ -86,6 +85,6 @@ int main() {
             break;
         }
     }
-    
+
     return ret;
 }

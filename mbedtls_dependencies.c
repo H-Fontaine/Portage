@@ -5,8 +5,9 @@
 /*Randomness generator function for blinding*/
 int rand(void* a , unsigned char* b, size_t c)
 {
-    (void)a;
-    memset(b, 1, c); //Ne peux pas mettre 0 comme valeur
+    //Limbs representation in mbedtls is big endian
+    memset(b, 0, c); //Set the buffer to 0
+    memset(b + c - 1, *(unsigned char*)a, 1); //Set the last byte to the value of a
     return 0;
 }
 
@@ -24,7 +25,7 @@ unsigned int strlen(const char * str) {
 
 //
 // Memory functions
-void * memcpy(void * dest, const void * src, size_t size) {
+void* memcpy(void * dest, const void * src, size_t size) {
     uint8_t* destination = (uint8_t*)dest;
     uint8_t* source = (uint8_t*)src;
     for (size_t i = 0; i < size; i++)
@@ -53,7 +54,7 @@ void* memmove(void* dest, const void* src, size_t size) {
 }
 
 
-void * memset (void * ptr, int value, size_t size) {
+void* memset(void * ptr, int value, size_t size) {
     unsigned char val = (unsigned char) value;
     for (size_t i = 0; i < size; i++)
     {
@@ -62,7 +63,7 @@ void * memset (void * ptr, int value, size_t size) {
     return ptr;
 }
  
-int memcmp (const void * ptr1, const void * ptr2, size_t size) {
+int memcmp(const void * ptr1, const void * ptr2, size_t size) {
     unsigned char* block_1 = (unsigned char*) ptr1;
     unsigned char* block_2 = (unsigned char*) ptr2;
     for (size_t i = 0; i < size; i++)

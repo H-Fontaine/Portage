@@ -1033,6 +1033,8 @@ cleanup:
 /*
  * Do an RSA private key operation
  */
+unsigned char one[1] = {1}; //added to disable blinding
+unsigned char zero[1] = {0}; //added to disable blinding
 int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
                         int (*f_rng)(void *, unsigned char *, size_t),
                         void *p_rng,
@@ -1113,7 +1115,7 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
      * Blinding
      * T = T * Vi mod N
      */
-    MBEDTLS_MPI_CHK(rsa_prepare_blinding(ctx, f_rng, p_rng));
+    MBEDTLS_MPI_CHK(rsa_prepare_blinding(ctx, f_rng, one)); //p_rng (last argument) was replaced by "one" to disable blinding (f_rng(1) -> 1, Vi = 1)
     MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&T, &T, &ctx->Vi));
     MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&T, &T, &ctx->N));
 
@@ -1130,7 +1132,7 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
      * D_blind = ( P - 1 ) * ( Q - 1 ) * R + D
      */
     MBEDTLS_MPI_CHK(mbedtls_mpi_fill_random(&R, RSA_EXPONENT_BLINDING,
-                                            f_rng, p_rng));
+                                            f_rng, zero)); //p_rng (last argument) was replaced by "zero" to disable blinding (f_rng(0) -> 0, R = 0)
     MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&D_blind, &P1, &Q1));
     MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&D_blind, &D_blind, &R));
     MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&D_blind, &D_blind, &ctx->D));
@@ -1139,7 +1141,7 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
      * DP_blind = ( P - 1 ) * R + DP
      */
     MBEDTLS_MPI_CHK(mbedtls_mpi_fill_random(&R, RSA_EXPONENT_BLINDING,
-                                            f_rng, p_rng));
+                                            f_rng, zero)); //p_rng (last argument) was replaced by "zero" to disable blinding (f_rng(0) -> 0, R = 0)
     MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&DP_blind, &P1, &R));
     MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&DP_blind, &DP_blind,
                                         &ctx->DP));
@@ -1148,7 +1150,7 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
      * DQ_blind = ( Q - 1 ) * R + DQ
      */
     MBEDTLS_MPI_CHK(mbedtls_mpi_fill_random(&R, RSA_EXPONENT_BLINDING,
-                                            f_rng, p_rng));
+                                            f_rng, zero)); //p_rng (last argument) was replaced by "zero" to disable blinding (f_rng(0) -> 0, R = 0)
     MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&DQ_blind, &Q1, &R));
     MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&DQ_blind, &DQ_blind,
                                         &ctx->DQ));
