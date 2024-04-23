@@ -1041,7 +1041,7 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
                         const unsigned char *input,
                         unsigned char *output)
 {
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED; //BEGIN CONSTANT TIME SECTION 1
     size_t olen;
 
     /* Temporary holding the result */
@@ -1103,7 +1103,7 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
     mbedtls_mpi_init(&input_blinded);
     mbedtls_mpi_init(&check_result_blinded);
 
-    /* End of MPI initialization */
+    /* End of MPI initialization */ //END CONSTANT TIME SECTION 1
 
     MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&T, input, ctx->len));
     if (mbedtls_mpi_cmp_mpi(&T, &ctx->N) >= 0) {
