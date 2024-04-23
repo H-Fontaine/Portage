@@ -1041,7 +1041,8 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
                         const unsigned char *input,
                         unsigned char *output)
 {
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED; //BEGIN CONSTANT TIME SECTION 1
+    //BEGIN CONSTANT TIME SECTION 1
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED; 
     size_t olen;
 
     /* Temporary holding the result */
@@ -1103,7 +1104,9 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
     mbedtls_mpi_init(&input_blinded);
     mbedtls_mpi_init(&check_result_blinded);
 
-    /* End of MPI initialization */ //END CONSTANT TIME SECTION 1
+    /* End of MPI initialization */
+    
+    //END CONSTANT TIME SECTION 1
 
     MBEDTLS_MPI_CHK(mbedtls_mpi_read_binary(&T, input, ctx->len));
     if (mbedtls_mpi_cmp_mpi(&T, &ctx->N) >= 0) {
@@ -1115,18 +1118,16 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
      * Blinding
      * T = T * Vi mod N
      */
-    MBEDTLS_MPI_CHK(rsa_prepare_blinding(ctx, f_rng, one)); //p_rng (last argument) was replaced by "one" to disable blinding (f_rng(1) -> 1, Vi = 1)
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&T, &T, &ctx->Vi));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&T, &T, &ctx->N));
-
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&input_blinded, &T));
+    MBEDTLS_MPI_CHK(rsa_prepare_blinding(ctx, f_rng, one));//NOT CONSTANT TIME //p_rng (last argument) was replaced by "one" to disable blinding (f_rng(1) -> 1, Vi = 1)
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&T, &T, &ctx->Vi));//NOT CONSTANT TIME   
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&T, &T, &ctx->N)); //NOT CONSTANT TIME
+    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&input_blinded, &T)); //CONSTANT TIME
 
     /*
      * Exponent blinding
      */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&P1, &ctx->P, 1));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&Q1, &ctx->Q, 1));
-
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&P1, &ctx->P, 1)); //NOT CONSTANT TIME
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_int(&Q1, &ctx->Q, 1)); //NOT CONSTANT TIME
 #if defined(MBEDTLS_RSA_NO_CRT)
     /*
      * D_blind = ( P - 1 ) * ( Q - 1 ) * R + D

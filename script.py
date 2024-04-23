@@ -10,8 +10,8 @@ PRIME_SIZE = RSA_KEY_SIZE // 2
 PRIME_SIZE_BYTES = PRIME_SIZE // 8
 
 gdb.execute("b main.c:65")
-gdb.execute("b rsa.c:1044")
-gdb.execute("b rsa.c:1105")
+gdb.execute("b *0x8004a20")
+gdb.execute("b *0x8004a28")
 
 cycles_counts = []
 
