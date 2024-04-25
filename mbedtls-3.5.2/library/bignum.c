@@ -1753,7 +1753,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
                         const mbedtls_mpi *E, const mbedtls_mpi *N,
                         mbedtls_mpi *prec_RR)
 {
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED; //CONSTANT TIME SECTION 1
     size_t window_bitsize;
     size_t i, j, nblimbs;
     size_t bufsize, nbits;
@@ -1766,6 +1766,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
     MPI_VALIDATE_RET(A != NULL);
     MPI_VALIDATE_RET(E != NULL);
     MPI_VALIDATE_RET(N != NULL);
+    
 
     if (mbedtls_mpi_cmp_int(N, 0) <= 0 || (N->p[0] & 1) == 0) {
         return MBEDTLS_ERR_MPI_BAD_INPUT_DATA;
@@ -1790,6 +1791,8 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
     memset(W, 0, sizeof(W));
 
     i = mbedtls_mpi_bitlen(E);
+
+    //END CONSTANT TIME SECTION 1
 
     window_bitsize = (i > 671) ? 6 : (i > 239) ? 5 :
                      (i >  79) ? 4 : (i >  23) ? 3 : 1;
@@ -1833,7 +1836,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
      * data, which is defeated by randomized blinding.
      */
     const size_t x_index = 0;
-    mbedtls_mpi_init(&W[x_index]);
+    mbedtls_mpi_init(&W[x_index]); //CONSTANT TIME
 
     j = N->n + 1;
     /* All W[i] including the accumulator must have at least N->n limbs for
@@ -1842,9 +1845,9 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
      * other W[i] to the same length. They must not be shrunk midway through
      * this function!
      */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[x_index], j));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[1],  j));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&T, j * 2));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[x_index], j)); //CONSTANT TIME ONLY FOR mod_exp2
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[1],  j)); //NOT CONSTANT TIME
+    MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&T, j * 2)); //NOT CONSTANT TIME
 
     /*
      * Compensate for negative A (and correct at the end)
@@ -1886,13 +1889,13 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
 
     /* Note that this is safe because W[1] always has at least N->n limbs
      * (it grew above and was preserved by mbedtls_mpi_copy()). */
-    mpi_montmul(&W[1], &RR, N, mm, &T);
+    mpi_montmul(&W[1], &RR, N, mm, &T); //CONSTANT TIME inside each call prepare_blinding, mod_exp1, mod_exp2 and verify
 
     /*
      * W[x_index] = R^2 * R^-1 mod N = R mod N
      */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&W[x_index], &RR));
-    mpi_montred(&W[x_index], N, mm, &T);
+    MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&W[x_index], &RR)); //CONSTANT TIME inside each call prepare_blinding, mod_exp1, mod_exp2 and verify
+    mpi_montred(&W[x_index], N, mm, &T); //CONSTANT TIME inside each call prepare_blinding, mod_exp1, mod_exp2 and verify
 
 
     if (window_bitsize > 1) {
@@ -1911,14 +1914,14 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
         MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[j], N->n + 1));
         MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&W[j], &W[1]));
 
-        for (i = 0; i < window_bitsize - 1; i++) {
+        for (i = 0; i < window_bitsize - 1; i++) { //THE WHOOLE LOOP IS CONSTANT TIME
             mpi_montmul(&W[j], &W[j], N, mm, &T);
         }
 
         /*
          * W[i] = W[i - 1] * W[1]
          */
-        for (i = j + 1; i < w_table_used_size; i++) {
+        for (i = j + 1; i < w_table_used_size; i++) { //THE LOOP IS NOT CONSTANT TIME
             MBEDTLS_MPI_CHK(mbedtls_mpi_grow(&W[i], N->n + 1));
             MBEDTLS_MPI_CHK(mbedtls_mpi_copy(&W[i], &W[i - 1]));
 
@@ -2011,7 +2014,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
     /*
      * W[x_index] = A^E * R * R^-1 mod N = A^E mod N
      */
-    mpi_montred(&W[x_index], N, mm, &T);
+    mpi_montred(&W[x_index], N, mm, &T); //CONSTANT TIME inside each call prepare_blinding, mod_exp1, mod_exp2 and verify depends on argument size in limbs
 
     if (neg && E->n != 0 && (E->p[0] & 1) != 0) {
         W[x_index].s = -1;

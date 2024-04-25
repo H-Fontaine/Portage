@@ -1142,19 +1142,17 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
      * DP_blind = ( P - 1 ) * R + DP
      */
     MBEDTLS_MPI_CHK(mbedtls_mpi_fill_random(&R, RSA_EXPONENT_BLINDING,
-                                            f_rng, zero)); //p_rng (last argument) was replaced by "zero" to disable blinding (f_rng(0) -> 0, R = 0)
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&DP_blind, &P1, &R));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&DP_blind, &DP_blind,
-                                        &ctx->DP));
+                                            f_rng, zero));//NOT CONSTANT TIME //p_rng (last argument) was replaced by "zero" to disable blinding (f_rng(0) -> 0, R = 0)
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&DP_blind, &P1, &R)); //NOT CONSTANT TIME
+    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&DP_blind, &DP_blind, &ctx->DP)); //NOT CONSTANT TIME
 
     /*
      * DQ_blind = ( Q - 1 ) * R + DQ
      */
     MBEDTLS_MPI_CHK(mbedtls_mpi_fill_random(&R, RSA_EXPONENT_BLINDING,
-                                            f_rng, zero)); //p_rng (last argument) was replaced by "zero" to disable blinding (f_rng(0) -> 0, R = 0)
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&DQ_blind, &Q1, &R));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&DQ_blind, &DQ_blind,
-                                        &ctx->DQ));
+                                            f_rng, zero)); //CONSTANT TIME //p_rng (last argument) was replaced by "zero" to disable blinding (f_rng(0) -> 0, R = 0)
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&DQ_blind, &Q1, &R)); //NOT CONSTANT TIME
+    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&DQ_blind, &DQ_blind, &ctx->DQ)); //CONSTANT TIME
 #endif /* MBEDTLS_RSA_NO_CRT */
 
 #if defined(MBEDTLS_RSA_NO_CRT)
@@ -1167,21 +1165,21 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
      * TQ = input ^ dQ mod Q
      */
 
-    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&TP, &T, &DP_blind, &ctx->P, &ctx->RP));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&TQ, &T, &DQ_blind, &ctx->Q, &ctx->RQ));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&TP, &T, &DP_blind, &ctx->P, &ctx->RP)); //NOT CONSTANT TIME
+    MBEDTLS_MPI_CHK(mbedtls_mpi_exp_mod(&TQ, &T, &DQ_blind, &ctx->Q, &ctx->RQ)); //NOT CONSTANT TIME
 
     /*
      * T = (TP - TQ) * (Q^-1 mod P) mod P
      */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&T, &TP, &TQ));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&TP, &T, &ctx->QP));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&T, &TP, &ctx->P));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_sub_mpi(&T, &TP, &TQ)); //NOT CONSTANT TIME
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&TP, &T, &ctx->QP)); //CONSTANT TIME
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mod_mpi(&T, &TP, &ctx->P)); //NOT CONSTANT TIME
 
     /*
      * T = TQ + T * Q
      */
-    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&TP, &T, &ctx->Q));
-    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&T, &TQ, &TP));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_mul_mpi(&TP, &T, &ctx->Q)); //CONSTANT TIME
+    MBEDTLS_MPI_CHK(mbedtls_mpi_add_mpi(&T, &TQ, &TP)); //CONSTANT TIME
 #endif /* MBEDTLS_RSA_NO_CRT */
 
     /* Verify the result to prevent glitching attacks. */
@@ -1196,10 +1194,10 @@ int mbedtls_rsa_private(mbedtls_rsa_context *ctx,
      * Unblind
      * T = T * Vf mod N
      */
-    MBEDTLS_MPI_CHK(rsa_unblind(&T, &ctx->Vf, &ctx->N));
+    MBEDTLS_MPI_CHK(rsa_unblind(&T, &ctx->Vf, &ctx->N)); //NOT CONSTANT TIME
 
     olen = ctx->len;
-    MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&T, output, olen));
+    MBEDTLS_MPI_CHK(mbedtls_mpi_write_binary(&T, output, olen)); //CONSTANT TIME
 
 cleanup:
 #if defined(MBEDTLS_THREADING_C)

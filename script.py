@@ -10,10 +10,13 @@ PRIME_SIZE = RSA_KEY_SIZE // 2
 PRIME_SIZE_BYTES = PRIME_SIZE // 8
 
 gdb.execute("b main.c:65")
-gdb.execute("b *0x8004a20")
-gdb.execute("b *0x8004a28")
+gdb.execute("b *0x8002046")
+gdb.execute("b *0x800204c")
 
-cycles_counts = []
+cycles_counts_prepare_blinding = []
+cycles_counts_mod_exp1 = []
+cycles_counts_mod_exp2 = []
+cycles_counts_verify = []
 
 for i in range(NB_TESTS):
     gdb.execute("c")
@@ -49,8 +52,40 @@ for i in range(NB_TESTS):
     gdb.execute("c")
     ##AFTER ENCRYPTION
     cycles_count = int.from_bytes(gdb.selected_inferior().read_memory(CYCCNT_register, 4).tobytes(), 'little')
-    cycles_counts.append(cycles_count)
+    cycles_counts_prepare_blinding.append(cycles_count)
 
-gdb.execute("shell clear")
-print("Average cycles count: ", sum(cycles_counts) / len(cycles_counts))
-print(cycles_counts)
+    gdb.execute("c")
+    ##BEFORE ENCRYPTION
+    gdb.selected_inferior().write_memory(CYCCNT_register, int(0).to_bytes(4, 'little'))
+    gdb.execute("c")
+    ##AFTER ENCRYPTION
+    cycles_count = int.from_bytes(gdb.selected_inferior().read_memory(CYCCNT_register, 4).tobytes(), 'little')
+    cycles_counts_mod_exp1.append(cycles_count)
+
+    gdb.execute("c")
+    ##BEFORE ENCRYPTION
+    gdb.selected_inferior().write_memory(CYCCNT_register, int(0).to_bytes(4, 'little'))
+    gdb.execute("c")
+    ##AFTER ENCRYPTION
+    cycles_count = int.from_bytes(gdb.selected_inferior().read_memory(CYCCNT_register, 4).tobytes(), 'little')
+    cycles_counts_mod_exp2.append(cycles_count)
+
+    gdb.execute("c")
+    ##BEFORE ENCRYPTION
+    gdb.selected_inferior().write_memory(CYCCNT_register, int(0).to_bytes(4, 'little'))
+    gdb.execute("c")
+    ##AFTER ENCRYPTION
+    cycles_count = int.from_bytes(gdb.selected_inferior().read_memory(CYCCNT_register, 4).tobytes(), 'little')
+    cycles_counts_verify.append(cycles_count)
+
+print("Average cycles count: ", sum(cycles_counts_prepare_blinding) / len(cycles_counts_prepare_blinding))
+print(cycles_counts_prepare_blinding)
+
+print("Average cycles count: ", sum(cycles_counts_mod_exp1) / len(cycles_counts_mod_exp1))
+print(cycles_counts_mod_exp1)
+
+print("Average cycles count: ", sum(cycles_counts_mod_exp2) / len(cycles_counts_mod_exp2))
+print(cycles_counts_mod_exp2)
+
+print("Average cycles count: ", sum(cycles_counts_verify) / len(cycles_counts_verify))
+print(cycles_counts_verify)
