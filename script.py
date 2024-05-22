@@ -34,26 +34,33 @@ class Key :
         gdb.selected_inferior().write_memory(gdb.parse_and_eval("D_buffer").address, Key.D.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING D
         gdb.selected_inferior().write_memory(gdb.parse_and_eval("input").address,  Key.INPUT.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING INPUT
 
-        
-
-load = gdb.Breakpoint("*0x80000c2")
-#mod_exp = gdb.Breakpoint("*0x8001af4")
-start_while = gdb.Breakpoint("*0x8001e90")
-skip_leading_zero = gdb.Breakpoint("*0x8001fb2")
-squaring = gdb.Breakpoint("*0x8001ede")
-window = gdb.Breakpoint("*0x8001f32")
-end = gdb.Breakpoint("*0x8001fb8")
-#end_square = gdb.Breakpoint("*0x8001f0c")
-
 
 class Breakpoints :
     LOAD = "*0x80000c2"
-    MOD_EXP = "*0x8001af4"
-    START_WHILE = "*0x8001e90"
-    SKIP_LEADING_ZERO = "*0x8001fb2"
-    SQUARING = "*0x8001ede"
-    WINDOW = "*0x8001f32"
+    #MOD_EXP = "*0x8001af4"
+    #START_WHILE = "*0x8001e90"
+    #SKIP_LEADING_ZERO = "*0x8001fb2"
+    
+    # SQUARING_SELECT_BEGIN = "*0x8001ee6"
+    # SQUARING_SELECT_END = "*0x8001eea"
+    # SQUARING_MULT_BEGIN = "*0x8001f08"
+    # SQUARING_MULT_END = "*0x8001f0c"
+    
+    WINDOW_S_SELECT_BEGIN = "*0x8001f40"
+    WINDOW_S_SELECT_END = "*0x8001f44"
+    # WINDOW_S_MULT_BEGIN = "*0x8001f62"
+    # WINDOW_S_MULT_END = "*0x8001f66"
+    
+    # WINDOW_M_SELECT_BEGIN = "*0x8001f7c"
+    # WINDOW_M_SELECT_END = "*0x8001f80"
+    # WINDOW_M_MULT_BEGIN = "*0x8001f9e"
+    # WINDOW_M_MULT_END = "*0x8001fa2"
+    
     END = "*0x8001fb8"
+
+for bp in Breakpoints.__dict__:
+    if str(Breakpoints.__dict__[bp])[0] == '*':
+        gdb.Breakpoint(str(Breakpoints.__dict__[bp]))
 
 
 
@@ -75,20 +82,36 @@ class State :
     STATE = "null"
     DATA = [
         {"skip_leading_zero" : [],
-         "squaring" : [],
-         "window" :[]},
-
-        {"skip_leading_zero" : [],
-         "squaring" : [],
-         "window" :[]},
+         "squaring_select" : [],
+         "squaring_mult" : [],
+         "window_s_select" : [],
+         "window_s_mult" : [],
+         "window_m_select" : [],
+         "window_m_mult" : []},
         
         {"skip_leading_zero" : [],
-         "squaring" : [],
-         "window" :[]},
-
+         "squaring_select" : [],
+         "squaring_mult" : [],
+         "window_s_select" : [],
+         "window_s_mult" : [],
+         "window_m_select" : [],
+         "window_m_mult" : []},
+        
         {"skip_leading_zero" : [],
-         "squaring" : [],
-         "window" :[]}    
+         "squaring_select" : [],
+         "squaring_mult" : [],
+         "window_s_select" : [],
+         "window_s_mult" : [],
+         "window_m_select" : [],
+         "window_m_mult" : []},
+        
+        {"skip_leading_zero" : [],
+         "squaring_select" : [],
+         "squaring_mult" : [],
+         "window_s_select" : [],
+         "window_s_mult" : [],
+         "window_m_select" : [],
+         "window_m_mult" : []}
     ]
 
 
@@ -101,34 +124,73 @@ def breakpoint_handler(event) :
             print(Key.N)
             Key.load_key()
 
-        case Breakpoints.START_WHILE :
-            if State.IN_WHILE == 1 :
-                Counter.read()
-                State.DATA[State.MOD_EXP_NB][State.STATE].append(Counter.COUNTER)
-            else :
-                State.IN_WHILE = 1
+        # case Breakpoints.START_WHILE :
+        #     if State.IN_WHILE == 1 :
+        #         Counter.read()
+        #         State.DATA[State.MOD_EXP_NB][State.STATE].append(Counter.COUNTER)
+        #         print(State.DATA)
+        #     else :
+        #         State.IN_WHILE = 1
         
-        case Breakpoints.SKIP_LEADING_ZERO :
-            State.STATE = "skip_leading_zero"
+        # case Breakpoints.SKIP_LEADING_ZERO :
+        #     State.STATE = "skip_leading_zero"
+        #     Counter.reset()
+
+        # case Breakpoints.SQUARING_SELECT_BEGIN :
+        #     Counter.reset()
+        
+        # case Breakpoints.SQUARING_SELECT_END :
+        #     Counter.read()
+        #     State.DATA[State.MOD_EXP_NB]["squaring_select"].append(Counter.COUNTER)
+        #     Counter.reset()
+
+        # case Breakpoints.SQUARING_MULT_BEGIN :
+        #     Counter.reset()
+
+        # case Breakpoints.SQUARING_MULT_END :
+        #     Counter.read()
+        #     State.DATA[State.MOD_EXP_NB]["squaring_mult"].append(Counter.COUNTER)
+        #     Counter.reset()
+
+        case Breakpoints.WINDOW_S_SELECT_BEGIN :
+            Counter.reset()
+        
+        case Breakpoints.WINDOW_S_SELECT_END :
+            Counter.read()
+            State.DATA[State.MOD_EXP_NB]["window_s_select"].append(Counter.COUNTER)
             Counter.reset()
 
-        case Breakpoints.SQUARING :
-            State.STATE = "squaring"
-            Counter.reset()
+        # case Breakpoints.WINDOW_S_MULT_BEGIN :
+        #     Counter.reset()
+
+        # case Breakpoints.WINDOW_S_MULT_END :
+        #     Counter.read()
+        #     State.DATA[State.MOD_EXP_NB]["window_s_mult"].append(Counter.COUNTER)
+        #     Counter.reset()
         
-        case Breakpoints.WINDOW :
-            State.STATE = "window"
-            Counter.reset()
+        # case Breakpoints.WINDOW_M_SELECT_BEGIN :
+        #     Counter.reset()
+        
+        # case Breakpoints.WINDOW_M_SELECT_END :
+        #     Counter.read()
+        #     State.DATA[State.MOD_EXP_NB]["window_m_select"].append(Counter.COUNTER)
+        #     Counter.reset()
+        
+        # case Breakpoints.WINDOW_M_MULT_BEGIN :
+        #     Counter.reset()
+        
+        # case Breakpoints.WINDOW_M_MULT_END :
+        #     Counter.read()
+        #     State.DATA[State.MOD_EXP_NB]["window_m_mult"].append(Counter.COUNTER)
+        #     Counter.reset()
 
         case Breakpoints.END :
             Counter.read()
-            State.DATA[State.MOD_EXP_NB][State.STATE].append(Counter.COUNTER)
             State.IN_WHILE = 0
             State.MOD_EXP_NB += 1
             State.STATE = "null"
             if State.MOD_EXP_NB == 4 :
                 State.END = True
-                print(State.DATA)
         
         case _:
             gdb.write("Not recognized breakpoint")
