@@ -26,7 +26,7 @@ CFLAGS_MBEDTLS =$(CFLAGS_ARCH) $(CFLAGS_OPTIONS)
 LDFLAGS = $(LDFLAGS_SPECS) $(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T linker_script.lds
 
 EXE =exec
-SOURCES =main.c init.c mbedtls_dependencies.c board.c
+SOURCES =main.c init.c mbedtls_dependencies.c board.c acquisitions.c
 OBJS =$(SOURCES:.c=.o) crt0.o
 OBJS_TO_CLEAN =$(OBJS) $(OBJS:.o=.d) $(EXE)
 
