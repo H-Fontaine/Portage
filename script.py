@@ -1,12 +1,14 @@
 import gdb
 import Cryptodome.Util.number as nb
-import random
+import gmpy2
+import numpy
 
 CYCCNT_register = 0xE0001004
 RSA_KEY_SIZE = 1024
 RSA_KEY_SIZE_BYTES = RSA_KEY_SIZE // 8
 PRIME_SIZE = RSA_KEY_SIZE // 2
 
+rng = np.random.default_rng()
 
 class Loader :
     N = 0
@@ -18,15 +20,18 @@ class Loader :
     M3_mong = 0
     IDX = 0
 
-    def generate_input() :
+    def generate_input():
         Loader.P = nb.getPrime(PRIME_SIZE)
         Loader.Q = nb.getPrime(PRIME_SIZE)
         Loader.N = Loader.P * Loader.Q
-        Loader.R_inv = pow(2**32, -1, Loader.N)
-        Loader.M1_mong = random.randint(0, Loader.N-1) * 2**32 % Loader.N
+        #Loader.R_inv = pow(2**32, -1, Loader.N)
+        Loader.R_inv = gmpy2.invert(Loader.P, 2**32) # was N
+        Loader.M1_mong = globals()['rng'].random.randint(0, Loader.N-1) * 2**32 % Loader.P # was N
         Loader.M2_mong = Loader.M1_mong**2 * Loader.R_inv % Loader.N
-        Loader.M3_mong = Loader.M2_mong * Loader.M1_mong * Loader.R_inv % Loader.N
-        Loader.IDX = random.randint(2,3)
+        Loader.M3_mong = Loader.M2_mong * Loader.M1_mong * Loader.R_inv % Loader.P # was N
+        # Loader.IDX = random.randint(2,3)
+        
+        Loader.IDX = globals['rng'].integers(low=2, high=4)
         return (Loader.IDX, Loader.P, Loader.Q, Loader.N, Loader.R_inv, Loader.M1_mong, Loader.M2_mong, Loader.M3_mong)
 
     def load() :

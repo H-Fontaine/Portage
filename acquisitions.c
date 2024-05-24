@@ -5,11 +5,8 @@
 
 extern int mpi_select(mbedtls_mpi *R, const mbedtls_mpi *T, size_t T_size, size_t idx);
 
-
-// extern void trigger_high(uint8_t);
-// extern void trigger_low(uint8_t);
-
-
+extern void trigger_high(uint8_t);
+extern void trigger_low(uint8_t);
 
 int user_defined_wrapper() {
     int ret = 0;
@@ -36,9 +33,11 @@ int user_defined_wrapper() {
     ret = mbedtls_mpi_read_binary(&W[3], m3_buffer, sizeof(m3_buffer));
     
     
-    //trigger_high(15);
-    ret = mpi_select(&result, W, TABLE_SIZE, idx);
-    //trigger_low(15);
+    for (int j = 0; j < 16; j++) {
+        trigger_high(15);
+        ret = mpi_select(&result, W, TABLE_SIZE, idx);
+        trigger_low(15);
+    }
 
     for (size_t i = 0; i < TABLE_SIZE; i++) {
         mbedtls_mpi_free(&W[i]);
