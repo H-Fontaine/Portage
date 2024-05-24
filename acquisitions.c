@@ -37,5 +37,10 @@ int user_defined_wrapper() {
     mpi_select(&result, W, TABLE_SIZE, idx);
     trigger_low(15);
 
+    for (size_t i = 0; i < TABLE_SIZE; i++) {
+        mbedtls_mpi_free(&W[i]);
+    }
+    mbedtls_mpi_free(&result);
+
     return 0;
 }
