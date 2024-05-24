@@ -1734,7 +1734,7 @@ static void mpi_montred(mbedtls_mpi *A, const mbedtls_mpi *N,
  *
  * \return \c 0 on success, or a negative error code.
  */
-static int mpi_select(mbedtls_mpi *R, const mbedtls_mpi *T, size_t T_size, size_t idx)
+/*static*/ int mpi_select(mbedtls_mpi *R, const mbedtls_mpi *T, size_t T_size, size_t idx) //removed static to make it public
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
 
