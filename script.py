@@ -6,7 +6,6 @@ CYCCNT_register = 0xE0001004
 RSA_KEY_SIZE = 1024
 RSA_KEY_SIZE_BYTES = RSA_KEY_SIZE // 8
 PRIME_SIZE = RSA_KEY_SIZE // 2
-PRIME_SIZE_BYTES = PRIME_SIZE // 8
 
 
 class Loader :
@@ -17,6 +16,7 @@ class Loader :
     M1_mong = 0
     M2_mong = 0
     M3_mong = 0
+    IDX = 0
 
     def generate_input() :
         Loader.P = nb.getPrime(PRIME_SIZE)
@@ -26,16 +26,18 @@ class Loader :
         Loader.M1_mong = random.randint(0, Loader.N-1) * 2**32 % Loader.N
         Loader.M2_mong = Loader.M1_mong**2 * Loader.R_inv % Loader.N
         Loader.M3_mong = Loader.M2_mong * Loader.M1_mong * Loader.R_inv % Loader.N
-        return (Loader.P, Loader.Q, Loader.N, Loader.R_inv, Loader.M1_mong, Loader.M2_mong, Loader.M3_mong)
+        Loader.IDX = random.randint(2,3)
+        return (Loader.IDX, Loader.P, Loader.Q, Loader.N, Loader.R_inv, Loader.M1_mong, Loader.M2_mong, Loader.M3_mong)
 
     def load() :
-        gdb.selected_inferior().write_memory(gdb.parse_and_eval("m1_buffer").address, Loader.M1_mong.to_bytes(PRIME_SIZE_BYTES, 'big')) ##WRITING M1
-        gdb.selected_inferior().write_memory(gdb.parse_and_eval("m2_buffer").address, Loader.M2_mong.to_bytes(PRIME_SIZE_BYTES, 'big')) ##WRITING M2
-        gdb.selected_inferior().write_memory(gdb.parse_and_eval("m3_buffer").address, Loader.M3_mong.to_bytes(PRIME_SIZE_BYTES, 'big')) ##WRITING M3
+        gdb.selected_inferior().write_memory(gdb.parse_and_eval("m1_buffer").address, Loader.M1_mong.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING M1
+        gdb.selected_inferior().write_memory(gdb.parse_and_eval("m2_buffer").address, Loader.M2_mong.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING M2
+        gdb.selected_inferior().write_memory(gdb.parse_and_eval("m3_buffer").address, Loader.M3_mong.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING M3
+        gdb.execute("set idx="+str(Loader.IDX))
         
 
 class Breakpoints :
-    LOAD = "*0x80000c2"
+    LOAD = "*0x8000322"
 
     def set_breakpoints() :
         for bp in Breakpoints.__dict__:
@@ -58,7 +60,7 @@ class Counter :
 def breakpoint_handler(event) :
     match event.breakpoint.location:
         case Breakpoints.LOAD :
-            P, Q, N, R_inv, M1_mong, M2_mong, M3_mong = Loader.generate_input()
+            IDX, P, Q, N, R_inv, M1_mong, M2_mong, M3_mong = Loader.generate_input()
             Loader.load()
         
         case _:
