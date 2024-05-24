@@ -34,26 +34,18 @@ class Key :
         gdb.selected_inferior().write_memory(gdb.parse_and_eval("D_buffer").address, Key.D.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING D
         gdb.selected_inferior().write_memory(gdb.parse_and_eval("input").address,  Key.INPUT.to_bytes(RSA_KEY_SIZE_BYTES, 'big')) ##WRITING INPUT
 
-        
 
-load = gdb.Breakpoint("*0x80000c2")
-#mod_exp = gdb.Breakpoint("*0x8001af4")
-start_while = gdb.Breakpoint("*0x8001e90")
-skip_leading_zero = gdb.Breakpoint("*0x8001fb2")
-squaring = gdb.Breakpoint("*0x8001ede")
-window = gdb.Breakpoint("*0x8001f32")
-end = gdb.Breakpoint("*0x8001fb8")
-#end_square = gdb.Breakpoint("*0x8001f0c")
 
 
 class Breakpoints :
-    LOAD = "*0x80000c2"
-    MOD_EXP = "*0x8001af4"
-    START_WHILE = "*0x8001e90"
-    SKIP_LEADING_ZERO = "*0x8001fb2"
-    SQUARING = "*0x8001ede"
-    WINDOW = "*0x8001f32"
-    END = "*0x8001fb8"
+    LOAD = "*0x80000b6"
+    BEGIN_select = "*0x800161e"
+    END_select = "*0x8001626"
+
+    def set_breakpoints() :
+        for bp in Breakpoints.__dict__:
+            if str(Breakpoints.__dict__[bp])[0] == '*':
+                gdb.Breakpoint(str(Breakpoints.__dict__[bp]))
 
 
 
@@ -66,30 +58,8 @@ class Counter :
 
     def read() :
         Counter.COUNTER = int.from_bytes(gdb.selected_inferior().read_memory(CYCCNT_register, 4).tobytes(), 'little')
-
-
-class State :
-    MOD_EXP_NB = 0
-    END = False
-    IN_WHILE = 0
-    STATE = "null"
-    DATA = [
-        {"skip_leading_zero" : [],
-         "squaring" : [],
-         "window" :[]},
-
-        {"skip_leading_zero" : [],
-         "squaring" : [],
-         "window" :[]},
-        
-        {"skip_leading_zero" : [],
-         "squaring" : [],
-         "window" :[]},
-
-        {"skip_leading_zero" : [],
-         "squaring" : [],
-         "window" :[]}    
-    ]
+        return Counter.COUNTER
+    
 
 
 def breakpoint_handler(event) :
@@ -101,41 +71,17 @@ def breakpoint_handler(event) :
             print(Key.N)
             Key.load_key()
 
-        case Breakpoints.START_WHILE :
-            if State.IN_WHILE == 1 :
-                Counter.read()
-                State.DATA[State.MOD_EXP_NB][State.STATE].append(Counter.COUNTER)
-            else :
-                State.IN_WHILE = 1
-        
-        case Breakpoints.SKIP_LEADING_ZERO :
-            State.STATE = "skip_leading_zero"
-            Counter.reset()
-
-        case Breakpoints.SQUARING :
-            State.STATE = "squaring"
+        case Breakpoints.BEGIN_select :
             Counter.reset()
         
-        case Breakpoints.WINDOW :
-            State.STATE = "window"
-            Counter.reset()
-
-        case Breakpoints.END :
-            Counter.read()
-            State.DATA[State.MOD_EXP_NB][State.STATE].append(Counter.COUNTER)
-            State.IN_WHILE = 0
-            State.MOD_EXP_NB += 1
-            State.STATE = "null"
-            if State.MOD_EXP_NB == 4 :
-                State.END = True
-                print(State.DATA)
+        case Breakpoints.END_select :
+            print("COUNTER :", Counter.read())
         
         case _:
             gdb.write("Not recognized breakpoint")
 
 gdb.events.stop.connect(breakpoint_handler)
+Breakpoints.set_breakpoints()
 
-while not State.END :
+while True :
     gdb.execute("continue")
-
-print(State.DATA)

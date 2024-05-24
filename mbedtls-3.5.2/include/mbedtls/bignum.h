@@ -1066,6 +1066,8 @@ int mbedtls_mpi_gen_prime(mbedtls_mpi *X, size_t nbits, int flags,
                           int (*f_rng)(void *, unsigned char *, size_t),
                           void *p_rng);
 
+int mpi_select(mbedtls_mpi *R, const mbedtls_mpi *T, size_t T_size, size_t idx);
+
 #if defined(MBEDTLS_SELF_TEST)
 
 /**
