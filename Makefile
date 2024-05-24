@@ -21,7 +21,7 @@ CFLAGS_OPTIONS =-mgeneral-regs-only -fno-common -pedantic -fomit-frame-pointer -
 
 LDFLAGS_SPECS =--specs=nosys.specs --specs=nano.specs -Wl,--gc-sections
 
-CFLAGS =-g -O1 $(CFLAGS_ERROR) $(foreach d, $(INCSDIR), -I$d) $(CFLAGS_ARCH) $(CFLAGS_OPTIONS) -MD -MP 
+CFLAGS =-g -O2 $(CFLAGS_ERROR) $(foreach d, $(INCSDIR), -I$d) $(CFLAGS_ARCH) $(CFLAGS_OPTIONS) -MD -MP 
 CFLAGS_MBEDTLS =$(CFLAGS_ARCH) $(CFLAGS_OPTIONS) 
 LDFLAGS = $(LDFLAGS_SPECS) $(foreach d, $(LIBSDIR), -L$d) $(LDLIBS) -T linker_script.lds
 
@@ -31,7 +31,7 @@ OBJS =$(SOURCES:.c=.o) crt0.o
 OBJS_TO_CLEAN =$(OBJS) $(OBJS:.o=.d) $(EXE)
 
 BUILD_DIR =build
-BUILD_TYPE =Debug
+BUILD_TYPE =Release
 TOOLCHAIN =toolchain.cmake
 
 all: $(EXE)
